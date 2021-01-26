@@ -1,1 +1,1 @@
-"# Stock Dashboard" 
+# Stock Dashboard
