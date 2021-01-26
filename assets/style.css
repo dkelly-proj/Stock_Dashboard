@@ -1,0 +1,10 @@
+body{
+    background-color: #1a1c23;
+    color: #b2b2b2;
+    height: 100vh;
+    margin: 0;
+}
+
+::-webkit-scrollbar {
+    display: none;
+}
