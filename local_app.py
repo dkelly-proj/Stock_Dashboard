@@ -78,12 +78,12 @@ app.layout = html.Div([
     dcc.Interval(
         id = 'interval-component',
         interval = 30 * 1000,
-        n_intervals = 0
-      html.Div(dash_table.DataTable(
-                id='reddit-table',
-                columns = [{"name": i, "id": i} for i in df_reddit.columns],
-                data = df_reddit.to_dict('records'), style_data = {'backgroundColor': 'transparent', 'color': 'white', 'table-layout': 'fixed;'},
-                style_header = {'backgroundColor': '#a1a1a1', 'color': 'black'}, style_cell = {'textAlign': 'center', 'font_size': '18px', 'white-space': 'normal','word-wrap': 'break-word',}), className = 'six columns'),
+        n_intervals = 0),
+    html.Div(dash_table.DataTable(
+        id='reddit-table',
+        columns = [{"name": i, "id": i} for i in df_reddit.columns],
+        data = df_reddit.to_dict('records'), style_data = {'backgroundColor': 'transparent', 'color': 'white', 'table-layout': 'fixed;'},
+        style_header = {'backgroundColor': '#a1a1a1', 'color': 'black'}, style_cell = {'textAlign': 'center', 'font_size': '18px', 'white-space': 'normal','word-wrap': 'break-word',}), className = 'six columns'),
 ], style = {'margin-top': '50px', 'margin-left': '50px'})
 
 @app.callback(Output('transport-value', 'children'), [Input('interval-component', 'n_intervals')])
