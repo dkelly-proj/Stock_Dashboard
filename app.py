@@ -11,6 +11,7 @@ import os
 from td.client import TDClient
 from config import account_number, client_id
 import td_helper
+import reddit
 import dash_html_components as html
 import dash_core_components as dcc
 from dash.dependencies import Input, Output
@@ -18,16 +19,21 @@ import plotly.graph_objects as go
 import twitter
 import twitter_config
 
-# Setup table
+# # Setup table
 symbols = td_helper.get_symbols()
 df_quotes = td_helper.get_radar_quotes(symbols)
-
-# Setup tweets table
+#
+# # Setup tweets table
 try:
     df_tweets = td_helper.fetch_tweets(tweet_symbols)
 except:
     df_tweets = pd.DataFrame({'Date': ['Please wait'], 'User': ['Twitter API rate limit'], 'Tweet': ['currently exceeded.']})
-
+#
+# # Setup reddit table
+try:
+    df_reddit = reddit.get_reddit()
+except:
+    df_reddit = pd.DataFrame({'Date': ['Please wait'], 'User': ['Reddit API rate limit'], 'Tweet': ['currently exceeded.']})
 # Initial chart one
 volatile_tickers = df_quotes['Symbol'][:2]
 df_p_hist = td_helper.get_radar_prices(1,5,volatile_tickers)
@@ -73,7 +79,11 @@ app.layout = html.Div([
         id = 'interval-component',
         interval = 30 * 1000,
         n_intervals = 0
-    )
+      html.Div(dash_table.DataTable(
+                id='reddit-table',
+                columns = [{"name": i, "id": i} for i in df_reddit.columns],
+                data = df_reddit.to_dict('records'), style_data = {'backgroundColor': 'transparent', 'color': 'white', 'table-layout': 'fixed;'},
+                style_header = {'backgroundColor': '#a1a1a1', 'color': 'black'}, style_cell = {'textAlign': 'center', 'font_size': '13px', 'white-space': 'normal','word-wrap': 'break-word',}), className = 'six columns'),
 ], style = {'margin-top': '50px', 'margin-left': '50px'})
 
 @app.callback(Output('transport-value', 'children'), [Input('interval-component', 'n_intervals')])
@@ -86,9 +96,16 @@ def update_table(j_symbols):
     df_quotes = td_helper.get_radar_quotes(json.loads(j_symbols)).to_dict('records')
     return df_quotes
 
+@app.callback(Output('reddit-table', 'data'), [Input('transport-value', 'children')])
+def update_reddit():
+    try:
+        df_reddit = reddit.get_reddit().to_dict('records')
+    except:
+        df_reddit = pd.DataFrame({'Date': ['Please wait'], 'User': ['Reddit API rate limit'], 'Tweet': ['currently exceeded.']}).to_dict('records')
+    return df_reddit
+
 @app.callback(Output('tweet-table', 'data'), [Input('transport-value', 'children')])
-def update_tweets(j_symbols):
-    tweet_symbols = [str('$' + symbol) for symbol in json.loads(j_symbols)]
+def update_reddit():
     try:
         df_tweets = td_helper.fetch_tweets(tweet_symbols).to_dict('records')
     except:
@@ -112,7 +129,7 @@ def display_candlestick(j_symbols):
 
     return fig_cs_one
 
-#app.css.append_css({'external_url': 'https://codepen.io/chriddyp/pen/bWLwgP.css'})
+app.css.append_css({'external_url': 'https://codepen.io/chriddyp/pen/bWLwgP.css'})
 
 if __name__ == '__main__':
     app.server.run()
