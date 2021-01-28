@@ -1,6 +1,7 @@
 # Credentials
 twitter_config.py
-config.py
+td_config.py
+reddit_config.py
 td_state.json
 
 # Editors
