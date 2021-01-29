@@ -7,7 +7,7 @@ import td_config
 # retrieve symbols from Radar watchlist
 def get_symbols():
     TDSession = TDClient(
-        client_id=client_id,
+        client_id=td_config.client_id,
         redirect_uri='http://localhost/test',
         credentials_path='td_state.json')
 
@@ -29,7 +29,7 @@ def get_symbols():
 # get current quotes for Radar watchlist symbols
 def get_radar_quotes(symbol_list):
     TDSession = TDClient(
-        client_id=client_id,
+        client_id=td_config.client_id,
         redirect_uri='http://localhost/test',
         credentials_path='td_state.json')
 
@@ -58,7 +58,7 @@ def get_radar_quotes(symbol_list):
 # Get prices for Radar charts
 def get_radar_prices(chart_days, candle_minutes, volatile_symbols):
     TDSession = TDClient(
-        client_id=client_id,
+        client_id=td_config.client_id,
         redirect_uri='http://localhost/test',
         credentials_path='td_state.json')
 
