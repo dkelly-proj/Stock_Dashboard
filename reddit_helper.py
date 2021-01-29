@@ -27,8 +27,7 @@ def get_reddit(cid= '', csec= '', uag= '', subreddit='wallstreetbets'):
     try:
         posts_df = pd.DataFrame(p,columns=['title', 'score', 'post'])
         # sorted_df = posts_df.sort_values(by='score', ascending=True)
-        sorted_df = posts_df.nlargest(25, "score")
-        print(sorted_df)
+        sorted_df = posts_df.nlargest(10, "score")
         return sorted_df
     except:
         print("your statement doesn't work")
