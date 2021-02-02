@@ -1,5 +1,5 @@
-#from flask import Flask
-#server = Flask('my app')
+from flask import Flask
+server = Flask('my app')
 
 # Standard imports
 import datetime
@@ -7,6 +7,7 @@ import pandas as pd
 import pytz
 import json
 import os
+import random
 import tweepy
 from td.client import TDClient
 
@@ -46,22 +47,24 @@ except:
     df_reddit = pd.DataFrame({'Date': ['Please wait'], 'User': ['Reddit API rate limit'], 'Tweet': ['currently exceeded.']})
 
 # Initial chart one
-volatile_tickers = df_quotes['Symbol'][:2]
-df_p_hist = td_helper.get_radar_prices(1,5,volatile_tickers)
-df_cs_one = df_p_hist.query("Symbol == @volatile_tickers[0]").reset_index(drop=True)
+df_cs_one = td_helper.get_radar_prices(1,5,df_quotes['Symbol'][random.randint(0,len(df_quotes['Symbol'])-1)])
 
-fig_cs_one = go.Figure(go.Candlestick(x=df_cs_one['Date'], open=df_cs_one['Open'], high=df_cs_one['High'],
-                                      low=df_cs_one['Low'], close=df_cs_one['Close']))
+fig_cs_one = go.Figure(data = [go.Candlestick(x=df_cs_one['Date'],
+                                              open=df_cs_one['Open'],
+                                              high=df_cs_one['High'],
+                                              low=df_cs_one['Low'],
+                                              close=df_cs_one['Close']),
+                               go.Scatter(x = df_cs_one['Date'], y = df_cs_one['SMA_9'], line = dict(color = 'cyan', width = 1))])
 
 fig_cs_one.update_layout(paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)', font_color='white',
-                         title_text='{} 5-minute Chart'.format('NIO'), title_font_size = 20, #volatile_tickers[0]), title_font_size=20,
-                         xaxis = dict(rangeslider = dict(visible = False)))
+                         title_text='{} 5-minute Chart'.format(df_cs_one['Symbol'][0]), title_font_size = 20, #volatile_tickers[0]), title_font_size=20,
+                         xaxis = dict(rangeslider = dict(visible = False)), showlegend = False)
 
 fig_cs_one.update_xaxes(gridcolor = '#D2D2D2')
 
 
 ## App
-app = dash.Dash('Dash Hello World', external_stylesheets=['https://codepen.io/chriddyp/pen/bWLwgP.css']) #, server = server)
+app = dash.Dash('Dash Hello World', external_stylesheets=['https://codepen.io/chriddyp/pen/bWLwgP.css'], server = server)
 
 text_style = dict(color='#444', fontFamily='sans-serif', fontWeight=300)
 
@@ -127,22 +130,26 @@ def update_tweets(t_symbols):
 
 @app.callback(Output("candle-one", "figure"), [Input('transport-value', 'children')])
 def display_candlestick(j_symbols):
-    volatile_tickers = td_helper.get_radar_quotes(json.loads(j_symbols))['Symbol'][:2]
-    df_p_hist = td_helper.get_radar_prices(1,5,volatile_tickers)
-    df_cs_one = df_p_hist.query("Symbol == @volatile_tickers[0]").reset_index(drop=True)
+    tickers = td_helper.get_radar_quotes(json.loads(j_symbols))['Symbol']
+    df_cs_one = td_helper.get_radar_prices(1, 5, tickers[random.randint(0, len(tickers) - 1)])
 
-    fig_cs_one = go.Figure(go.Candlestick(x=df_cs_one['Date'], open=df_cs_one['Open'], high=df_cs_one['High'],
-                                          low=df_cs_one['Low'], close=df_cs_one['Close']))
+    fig_cs_one = go.Figure(data=[go.Candlestick(x=df_cs_one['Date'],
+                                                open=df_cs_one['Open'],
+                                                high=df_cs_one['High'],
+                                                low=df_cs_one['Low'],
+                                                close=df_cs_one['Close']),
+                                 go.Scatter(x=df_cs_one['Date'], y=df_cs_one['SMA_9'],
+                                            line=dict(color='cyan', width=1))])
 
     fig_cs_one.update_layout(paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)', font_color='white',
-                             title_text='{} 5-minute Chart'.format(volatile_tickers[0]), title_font_size=20,
-                             xaxis = dict(rangeslider = dict(visible = False)))
+                             title_text='{} 5-minute Chart'.format(df_cs_one['Symbol'][0]), title_font_size=20,
+                             xaxis = dict(rangeslider = dict(visible = False)), showlegend = False)
 
     fig_cs_one.update_xaxes(gridcolor = '#D2D2D2')
 
     return fig_cs_one
 
-#if __name__ == '__main__':
-#    app.server.run()
+if __name__ == '__main__':
+    app.server.run()
 
-app.server.run(debug = True)
+#app.server.run(debug = True)
